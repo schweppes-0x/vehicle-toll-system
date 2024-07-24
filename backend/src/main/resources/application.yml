@@ -1,0 +1,17 @@
+spring:
+    application:
+        name: tol
+    datasource:
+        password: secret
+        url: jdbc:postgresql://localhost:32772/tolldb
+        username: adminuser
+    jpa:
+        show-sql:
+            true
+        hibernate:
+            ddl-auto: update
+        properties:
+            hibernate:
+                jdbc:
+                    lob:
+                        non_contextual_creation: true
