@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import TollForm from './components/TollForm';
+import PurchaseTollForm from './components/PurchaseTollForm';
+import RegisterCarForm from './components/RegisterCarForm';
+import VehicleInfo from './components/VehicleInfo';
+import ErrorAlert from './components/ErrorAlert';
 
 const Home: React.FC = () => {
     const [carData, setCarData] = useState({
@@ -28,7 +33,7 @@ const Home: React.FC = () => {
             });
             alert('Car registered and toll paid successfully!');
         } catch (error: any) {
-            setError(error.response?.data?.message || 'An error occurred');
+            setError(error.response?.data || 'An error occurred');
         }
     };
 
@@ -43,10 +48,11 @@ const Home: React.FC = () => {
             setVehicleInfo(response.data);
             setError(null); // Clear previous errors
         } catch (error: any) {
-            setError(error.response?.data?.message || 'An error occurred');
+            setError(error.response?.data || 'An error occurred');
             setVehicleInfo(null); // Clear previous vehicle info
         }
     };
+
 
     const handlePurchaseToll = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -59,150 +65,33 @@ const Home: React.FC = () => {
             alert('Toll purchased successfully!');
             setPurchaseData({ licensePlate: '', duration: 'MONTH' }); // Reset purchase form
         } catch (error: any) {
-            setError(error.response?.data?.message || 'An error occurred');
+            setError(error.response?.data || 'An error occurred');
         }
-    };
-
-    const isValidToll = (validUntil: string | undefined) => {
-        if (!validUntil || validUntil === '1970-01-01T00:00:00.000Z') {
-            return false;
-        }
-        const now = new Date();
-        const validUntilDate = new Date(validUntil);
-        return validUntilDate > now;
     };
 
     return (
         <div className="min-h-screen bg-gray-100 p-4">
-            {/* Pay Toll for Specific Vehicle */}
-            <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow-md mb-8">
-                <h2 className="text-2xl font-semibold mb-4">Check Toll for Specific Vehicle</h2>
-                <form onSubmit={handlePayToll}>
-                    <label className="block mb-4">
-                        <span className="text-gray-700">License Plate Number:</span>
-                        <input
-                            type="text"
-                            name="licensePlate"
-                            value={tollData.licensePlate}
-                            onChange={(e) => setTollData({ ...tollData, licensePlate: e.target.value })}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                            required
-                        />
-                    </label>
-                    <button
-                        type="submit"
-                        className="px-4 py-2 bg-blue-500 text-white font-semibold rounded"
-                    >
-                        Check Valid Toll
-                    </button>
-                </form>
+            <TollForm
+                tollData={tollData}
+                setTollData={setTollData}
+                handleSubmit={handlePayToll}
+                vehicleInfo={vehicleInfo}
+                error={error}
+            />
 
-                {vehicleInfo && (
-                    <div className={`mt-4 p-4 border rounded ${isValidToll(vehicleInfo.validUntil) ? 'bg-green-100 border-green-200 text-green-600' : 'bg-red-100 border-red-200 text-red-600'}`}>
-                        <h3 className="text-lg font-semibold">Vehicle Info:</h3>
-                        <p>License Plate: {vehicleInfo.license}</p>
-                        <p>Status: {isValidToll(vehicleInfo.validUntil) ? 'Valid' : 'Invalid'}</p>
-                        {isValidToll(vehicleInfo.validUntil) && (
-                            <p>Valid untill: {vehicleInfo.validUntil}</p>
-                        )}
-                    </div>
-                )}
+            <PurchaseTollForm
+                purchaseData={purchaseData}
+                setPurchaseData={setPurchaseData}
+                handleSubmit={handlePurchaseToll}
+            />
 
-                {error && (
-                    <div className="mt-4 p-4 bg-red-100 border border-red-200 rounded text-red-600">
-                        {error}
-                    </div>
-                )}
-            </div>
+            <RegisterCarForm
+                carData={carData}
+                setCarData={setCarData}
+                handleSubmit={handleRegisterCar}
+            />
 
-            {/* Purchase Toll */}
-            <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow-md">
-                <h2 className="text-2xl font-semibold mb-4">Purchase Toll</h2>
-                <form onSubmit={handlePurchaseToll}>
-                    <label className="block mb-4">
-                        <span className="text-gray-700">License Plate Number:</span>
-                        <input
-                            type="text"
-                            name="licensePlate"
-                            value={purchaseData.licensePlate}
-                            onChange={(e) => setPurchaseData({ ...purchaseData, licensePlate: e.target.value })}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                            required
-                        />
-                    </label>
-                    <label className="block mb-4">
-                        <span className="text-gray-700">Duration:</span>
-                        <select
-                            name="duration"
-                            value={purchaseData.duration}
-                            onChange={(e) => setPurchaseData({ ...purchaseData, duration: e.target.value as 'WEEK' | 'MONTH' | 'YEAR' })}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                            required
-                        >
-                            <option value="WEEK">Week</option>
-                            <option value="MONTH">Month</option>
-                            <option value="YEAR">Year</option>
-                        </select>
-                    </label>
-                    <button
-                        type="submit"
-                        className="px-4 py-2 bg-blue-500 text-white font-semibold rounded"
-                    >
-                        Purchase Toll
-                    </button>
-                </form>
-            </div>
-
-            {/* Register Car and Pay Toll */}
-            <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow-md mb-8">
-                <h2 className="text-2xl font-semibold mb-4">Register a Car and Pay Toll</h2>
-                <form onSubmit={handleRegisterCar}>
-                    <label className="block mb-4">
-                        <span className="text-gray-700">License Plate Number:</span>
-                        <input
-                            type="text"
-                            name="licensePlateNumber"
-                            value={carData.licensePlateNumber}
-                            onChange={(e) => setCarData({ ...carData, licensePlateNumber: e.target.value })}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                            required
-                        />
-                    </label>
-                    <label className="block mb-4">
-                        <span className="text-gray-700">Manufacture Date:</span>
-                        <input
-                            type="date"
-                            name="manufactureDate"
-                            value={carData.manufactureDate}
-                            onChange={(e) => setCarData({ ...carData, manufactureDate: e.target.value })}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                            required
-                        />
-                    </label>
-                    <label className="block mb-4">
-                        <span className="text-gray-700">Duration:</span>
-                        <select
-                            name="duration"
-                            value={carData.duration}
-                            onChange={(e) => setCarData({ ...carData, duration: e.target.value as 'WEEK' | 'MONTH' | 'YEAR' })}
-                            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm"
-                            required
-                        >
-                            <option value="WEEK">Week</option>
-                            <option value="MONTH">Month</option>
-                            <option value="YEAR">Year</option>
-                        </select>
-                    </label>
-                    <button
-                        type="submit"
-                        className="px-4 py-2 bg-blue-500 text-white font-semibold rounded"
-                    >
-                        Register and Pay Toll
-                    </button>
-                </form>
-            </div>
-
-
+            <ErrorAlert error={error} />
         </div>
     );
 };
