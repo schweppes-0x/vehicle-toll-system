@@ -17,5 +17,5 @@ spring:
                         non_contextual_creation: true
 
 security:
-    apikey: apikey
+    apikey: apii
     apikey-header: X-API-KEY

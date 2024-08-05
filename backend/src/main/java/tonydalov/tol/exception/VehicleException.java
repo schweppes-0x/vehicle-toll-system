@@ -10,6 +10,7 @@ public class VehicleException extends RuntimeException {
         super(message, cause);
     }
 
+    private static final String UNKNOWN_ERROR = "Unknown vehicle error";
     private static final String UNKNOWN_LICENSE = "Unknown vehicle license. Please register your car first";
     private static final String INVALID_TOLL_DATA = "Invalid Toll data";
     private static String ALREADY_REGISTERED(String license) {return  "Vehicle is already registered with license plate: " + license;}
@@ -24,5 +25,9 @@ public class VehicleException extends RuntimeException {
 
     public static VehicleException alreadyExists(String licensePlate) {
         return new VehicleException(ALREADY_REGISTERED(licensePlate));
+    }
+
+    public static VehicleException unknownError(){
+        return new VehicleException(UNKNOWN_ERROR);
     }
 }
