@@ -15,6 +15,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -28,6 +29,8 @@ public class Toll {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String uuid;
     private LocalDateTime tollExpiration;
+    private TollDuration duration;
+    private BigDecimal price;
 
     @ManyToOne
     @JoinColumn(name = "license_plate_number", nullable = false)

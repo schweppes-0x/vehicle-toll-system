@@ -33,30 +33,36 @@ public class  CarService {
     }
 
     public TollResponse getValidity(String licensePlateNumber) {
-        Optional<Vehicle> foundVehicle = getVehicleByLicenseNumber(licensePlateNumber);
-        if(foundVehicle.isEmpty()){
-            throw VehicleException.unknownLicense();
-        }else{
-            if(foundVehicle.get().hasValidToll()){
-                return new TollResponse(licensePlateNumber, foundVehicle.get().getLatestTol().get().getTollExpiration(), true);
-            }
-            Optional<Toll> lastExpiredToll = foundVehicle.get().getLatestTol();
-            if(lastExpiredToll.isPresent()){
-                return new TollResponse(licensePlateNumber, lastExpiredToll.get().getTollExpiration(), false);
-            }
-            else return new TollResponse(licensePlateNumber, null, false);
+        Vehicle found = getVehicleByLicenseNumber(licensePlateNumber)
+                .orElseThrow(VehicleException::unknownLicense);
+
+        // Check if vehicle has a valid toll
+        Optional<Toll> latestToll = found.getLatestTol();
+        boolean hasValidToll = found.hasValidToll();
+
+        if (hasValidToll && latestToll.isPresent()) {
+            return new TollResponse(licensePlateNumber, latestToll.get().getTollExpiration(), true);
         }
+
+        return new TollResponse(licensePlateNumber,
+                latestToll.map(Toll::getTollExpiration).orElse(null),
+                hasValidToll);
     }
+
 
     public Vehicle register(VehicleDto vehicle){
         if(getVehicleByLicenseNumber(vehicle.licensePlateNumber()).isPresent()){
             throw VehicleException.alreadyExists(vehicle.licensePlateNumber());
         }
 
-        return vehicleRepository.save(Vehicle.builder()
+        Vehicle built = Vehicle.builder()
                 .licensePlateNumber(vehicle.licensePlateNumber())
                 .manufactureDate(vehicle.manufactureDate())
-                .tollHistory(List.of())
-                .build());
+                .build();
+
+        Toll initialToll = tollService.purchaseToll(built, vehicle.duration());
+        built.setTollHistory(List.of(initialToll));
+
+        return vehicleRepository.save(built);
     }
 }

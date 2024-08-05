@@ -28,21 +28,18 @@ public class TollService {
         Toll toll = Toll.builder()
                 .vehicle(vehicle)
                 .tollExpiration(getExpiration(currentExpiration, duration))
+                .duration(duration)
+                .price(duration.getPrice())
                 .build();
 
         return tollRepository.save(toll);
     }
 
     private LocalDateTime getExpiration(LocalDateTime currentExpiration, TollDuration duration) {
-        switch (duration) {
-            case YEAR:
-                return currentExpiration.plus(1, ChronoUnit.YEARS);
-            case MONTH:
-                return currentExpiration.plus(1, ChronoUnit.MONTHS);
-            case WEEK:
-                return currentExpiration.plus(1, ChronoUnit.WEEKS);
-            default:
-                throw new IllegalArgumentException("Invalid TollDuration: " + duration);
-        }
+        return switch (duration) {
+            case YEAR -> currentExpiration.plusYears(1);
+            case MONTH -> currentExpiration.plusMonths(1);
+            case WEEK -> currentExpiration.plusWeeks(1);
+        };
     }
 }
